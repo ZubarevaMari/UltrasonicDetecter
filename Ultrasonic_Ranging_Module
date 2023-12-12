@@ -1,0 +1,49 @@
+#define PIN_TRIG 2
+#define PIN_ECHO 3
+
+long duration, cm;
+float v, v_sum;
+int i;
+long distance_ = ...;     // Расстояние от датчика до объекта в мм. Нужно указать
+
+void setup() {
+  // Инициализируем взаимодействие по последовательному порту
+  Serial.begin (9600);
+  //Определяем вводы и выводы
+  pinMode(PIN_TRIG, OUTPUT);
+  pinMode(PIN_ECHO, INPUT);
+  distance_*=1000;
+}
+
+void loop() {
+  // Сначала генерируем короткий импульс длительностью 2-5 микросекунд.
+  digitalWrite(PIN_TRIG, LOW);
+  delayMicroseconds(5);
+  digitalWrite(PIN_TRIG, HIGH);
+  // Выставив высокий уровень сигнала, ждем около 10 микросекунд. 
+  //В этот момент датчик будет посылать сигналы с частотой 40 КГц.
+  delayMicroseconds(10);
+  digitalWrite(PIN_TRIG, LOW);
+
+  //  Время задержки акустического сигнала на эхолокаторе.
+  duration = pulseIn(PIN_ECHO, HIGH);
+
+  v = float(distance_)/float(duration);
+  v*=2;
+  v_sum+=v;
+
+  i++;
+  // Среднее по 10 измерениям
+  if(i == 10){
+    v = v_sum/float(i);
+    Serial.print("Скорость: ");
+    Serial.print(v);
+    Serial.println(" м/с.");
+
+    v_sum = 0;
+    i =0;
+  }
+
+// Задержка между измерениями для корректной работы скетча
+  delay(500);
+}
